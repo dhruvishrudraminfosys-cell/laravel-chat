@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Real-Time Chat</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 420px;
+            height: 600px;
+            background: #ffffff;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Modern Professional Header */
+        .chat-header {
+            background: #ffffff;
+            color: #333333;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .header-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .header-info span {
+            font-size: 12px;
+            color: #28a745;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-info span::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: #28a745;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Message Area */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .message-row.sent {
+            flex-direction: row-reverse;
+        }
+
+        .message-row.received {
+            flex-direction: row;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #ddd;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            font-size: 14px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .message.received {
+            background: #ffffff;
+            color: #333333;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #eaeaea;
+        }
+
+        .message.sent {
+            background: #4f46e5;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message span.user {
+            display: block;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            opacity: 0.8;
+        }
+
+        /* Typing Indicator Styling */
+        .typing-indicator {
+            padding: 6px 15px;
+            font-size: 12px;
+            color: #6c757d;
+            font-style: italic;
+            background: #f8f9fa;
+            min-height: 24px;
+            display: none;
+        }
+
+        .message.system {
+            background: transparent;
+            color: #888888;
+            font-style: italic;
+            text-align: center;
+            max-width: 100%;
+            align-self: center;
+            font-size: 12px;
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            display: flex;
+            padding: 12px 15px;
+            background: #ffffff;
+            border-top: 1px solid #eaeaea;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: #4f46e5;
+        }
+
+        .chat-input-area button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            background: #4338ca;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <img src="avatar/live-chat.webp" class="header-avatar" alt="Contact">
+            <div class="header-info">
+                <h3 id="roomTitle">Chat Room</h3>
+                <!-- Username is displayed here next to the online status -->
+                <span id="userStatus">Online</span>
+            </div>
+        </div>
+
+        <!-- Messages list -->
+        <div id="chatMessages" class="chat-messages"></div>
+
+        <!-- Typing status box -->
+        <div id="typingIndicator" class="typing-indicator"></div>
+
+        <!-- Input Form -->
+        <form id="chatForm" class="chat-input-area">
+            <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
+            <button type="submit">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </form>
+    </div>
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let username = prompt("Enter your name:") || 'Anonymous';
+        
+        // Display user's name right under the header title / beside status
+        const userStatus = document.getElementById('userStatus');
+        userStatus.textContent = `Online • Logged in as ${username}`;
+
+        const myAvatar = 'avatar/user1.jpg';
+        const peerAvatar = 'avatar/user2.webp';
+
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${protocol}//${window.location.host}`);
+
+        let typingTimeout = null;
+
+        ws.onopen = () => {
+            appendSystemMessage('Connected securely to chat server');
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'typing') {
+                typingIndicator.textContent = `${data.user} is typing...`;
+                typingIndicator.style.display = 'block';
+
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    typingIndicator.style.display = 'none';
+                }, 1500);
+            } 
+            else if (data.type === 'message') {
+                typingIndicator.style.display = 'none';
+                appendMessage(data.user, data.text, peerAvatar, false);
+            }
+        };
+
+        ws.onclose = () => {
+            appendSystemMessage('Disconnected from chat server');
+        };
+
+        messageInput.addEventListener('input', () => {
+            const typingData = { type: 'typing', user: username };
+            ws.send(JSON.stringify(typingData));
+        });
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            const messageData = { type: 'message', user: username, text: text };
+            ws.send(JSON.stringify(messageData));
+            
+            appendMessage("You", text, myAvatar, true);
+            messageInput.value = '';
+        });
+
+        function appendMessage(user, text, avatarSrc, isSent) {
+            const rowDiv = document.createElement('div');
+            rowDiv.classList.add('message-row', isSent ? 'sent' : 'received');
+
+            const avatarImg = document.createElement('img');
+            avatarImg.classList.add('avatar');
+            avatarImg.src = avatarSrc;
+            avatarImg.onerror = () => { avatarImg.src = 'https://via.placeholder.com/32'; };
+
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', isSent ? 'sent' : 'received');
+            messageDiv.innerHTML = `<span class="user">${escapeHTML(user)}</span> ${escapeHTML(text)}`;
+
+            rowDiv.appendChild(avatarImg);
+            rowDiv.appendChild(messageDiv);
+
+            chatMessages.appendChild(rowDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function appendSystemMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'system');
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g,
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+    });
+</script>
+
+</html>
