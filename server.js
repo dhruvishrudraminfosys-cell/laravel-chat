@@ -2,12 +2,57 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+app.use(cors());
+app.use(express.json());
+
+const uploadDirectory = path.join(__dirname, 'uploads');
+fs.mkdirSync(uploadDirectory, { recursive: true });
+
+const storage = multer.diskStorage({
+    destination: uploadDirectory,
+    filename: (req, file, callback) => {
+        const extension = path.extname(file.originalname);
+        callback(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`);
+    }
+});
+
+const upload = multer({ storage: storage, limits: { fileSize: 5 * 1024 * 1024 } }); 
+
+app.post('/upload', upload.single('image'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+        const ImageUrl = `/uploads/${req.file.filename}`;
+        const payload = {
+            type: 'image',
+            url: ImageUrl,
+            user: req.body.user || 'Anonymous',
+            timestamp: new Date().toISOString()
+        };
+        broadcast(payload, null);
+        return res.status(200).json({ message: 'File uploaded successfully', url: ImageUrl });
+    } catch (error) {
+        console.error('Error during file upload:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+
+
 
 function broadcast(data, excludeClient) {
     wss.clients.forEach(client => {
@@ -22,7 +67,6 @@ wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         try {
             const parsedMessage = JSON.parse(message);
-            // Broadcast the message to all other connected clients (User B sees User A's message)
             broadcast(parsedMessage, ws);
         } catch (error) {
             console.error('Failed to parse message', error);
@@ -36,4 +80,4 @@ wss.on('connection', (ws) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
-});         
+});
