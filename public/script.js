@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('messageInput');
     const typingIndicator = document.getElementById('typingIndicator');
     const imageInput = document.getElementById('imageInput');
+    let selectedImageFile = null;
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(`${protocol}//${window.location.host}`);
@@ -57,8 +58,17 @@ document.addEventListener('DOMContentLoaded', () => {
         ws.send(JSON.stringify(typingData));
     });
 
-    chatForm.addEventListener('submit', (e) => {
+    chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (selectedImageFile) {
+            await uploadImage(selectedImageFile);
+            selectedImageFile = null;
+            imageInput.value = '';
+            messageInput.value = '';
+            return;
+        }
+
         const text = messageInput.value.trim();
         if (!text) return;
 
@@ -144,13 +154,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3500);
     }
 
-    imageInput.addEventListener('change', async function () {
+    imageInput.addEventListener('change', function () {
         const file = imageInput.files[0];
         if (!file) return;
 
+        selectedImageFile = file;
+        messageInput.value = file.name;
+    });
+
+    async function uploadImage(file) {
         const formData = new FormData();
         formData.append('image', file);
-        formData.append('user', username); 
+        formData.append('user', username);
 
         try {
             const responseObj = await fetch('/upload', {
@@ -165,9 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Image upload failed:', error);
         }
-
-        imageInput.value = '';
-    });
+    }
 
     function escapeHTML(str) {
         return str.replace(/[&<>'"]/g,
