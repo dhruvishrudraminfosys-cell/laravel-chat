@@ -10,12 +10,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    padding: 20px;
 }
 
 .chat-container {
-    width: 420px;
-    height: 600px;
+    width: min(100%, 520px);
+    height: min(88vh, 720px);
+    min-height: 520px;
     background: #ffffff;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     border-radius: 12px;
@@ -130,6 +132,61 @@ body {
     opacity: 0.8;
 }
 
+.message-time {
+    display: block;
+    margin-top: 5px;
+    font-size: 10px;
+    text-align: right;
+    opacity: 0.7;
+}
+
+.live-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    width: min(300px, calc(100vw - 40px));
+    padding: 12px 16px;
+    border-left: 4px solid #4f46e5;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #333333;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+    animation: notification-in 0.25s ease-out;
+}
+
+.live-notification strong,
+.live-notification span {
+    display: block;
+}
+
+.live-notification strong {
+    color: #4f46e5;
+    font-size: 13px;
+}
+
+.live-notification span {
+    margin-top: 3px;
+    overflow: hidden;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.live-notification.hide {
+    animation: notification-out 0.25s ease-in forwards;
+}
+
+@keyframes notification-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes notification-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
 /* Typing Indicator Styling */
 .typing-indicator {
     padding: 6px 15px;
@@ -191,4 +248,17 @@ body {
 
 .chat-input-area button:hover {
     background: #4338ca;
+}
+
+@media (max-width: 560px) {
+    body {
+        padding: 0;
+    }
+
+    .chat-container {
+        width: 100vw;
+        height: 100vh;
+        min-height: 0;
+        border-radius: 0;
+    }
 }

@@ -36,12 +36,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else if (data.type === 'message') {
             typingIndicator.style.display = 'none';
-            appendMessage(data.user, data.text, peerAvatar, false);
+            const isSent = data.user === username;
+            appendMessage(data.user, data.text, data.timestamp, isSent ? myAvatar : peerAvatar, isSent);
+            if (!isSent) showNotification(data.user, data.text);
         }
         else if (data.type === 'image') {
             typingIndicator.style.display = 'none';
             const isSent = data.user === username;
-            appendImageMessage(data.user, data.url, isSent ? myAvatar : peerAvatar, isSent);
+            appendImageMessage(data.user, data.url, data.timestamp, isSent ? myAvatar : peerAvatar, isSent);
+            if (!isSent) showNotification(data.user, 'Sent you an image');
         }
     };
 
@@ -59,14 +62,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = messageInput.value.trim();
         if (!text) return;
 
-        const messageData = { type: 'message', user: username, text: text };
+        const messageData = {
+            type: 'message',
+            user: username,
+            text: text,
+            timestamp: new Date().toISOString()
+        };
         ws.send(JSON.stringify(messageData));
 
-        appendMessage("You", text, myAvatar, true);
+        appendMessage("You", text, messageData.timestamp, myAvatar, true);
         messageInput.value = '';
     });
 
-    function appendMessage(user, text, avatarSrc, isSent) {
+    function appendMessage(user, text, timestamp, avatarSrc, isSent) {
         const rowDiv = document.createElement('div');
         rowDiv.classList.add('message-row', isSent ? 'sent' : 'received');
 
@@ -77,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', isSent ? 'sent' : 'received');
-        messageDiv.innerHTML = `<span class="user">${escapeHTML(user)}</span> ${escapeHTML(text)}`;
+        messageDiv.innerHTML = `<span class="user">${escapeHTML(user)}</span> ${escapeHTML(text)}<span class="message-time">${formatTimestamp(timestamp)}</span>`;
 
         rowDiv.appendChild(avatarImg);
         rowDiv.appendChild(messageDiv);
@@ -86,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function appendImageMessage(user, url, avatarSrc, isSent) {
+    function appendImageMessage(user, url, timestamp, avatarSrc, isSent) {
         const rowDiv = document.createElement('div');
         rowDiv.classList.add('message-row', isSent ? 'sent' : 'received');
 
@@ -97,13 +105,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', isSent ? 'sent' : 'received');
-        messageDiv.innerHTML = `<span class="user">${escapeHTML(user)}</span><br><img src="${url}" style="max-width: 200px; border-radius: 8px; margin-top: 4px; display: block;">`;
+        messageDiv.innerHTML = `<span class="user">${escapeHTML(user)}</span><br><img src="${escapeHTML(url)}" style="max-width: 200px; border-radius: 8px; margin-top: 4px; display: block;"><span class="message-time">${formatTimestamp(timestamp)}</span>`;
 
         rowDiv.appendChild(avatarImg);
         rowDiv.appendChild(messageDiv);
 
         chatMessages.appendChild(rowDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        if (Number.isNaN(date.getTime())) return '';
+
+        return date.toLocaleString([], {
+            dateStyle: 'short',
+            timeStyle: 'short'
+        });
     }
 
     function appendSystemMessage(text) {
@@ -114,16 +132,27 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
+    function showNotification(user, text) {
+        const notification = document.createElement('div');
+        notification.className = 'live-notification';
+        notification.innerHTML = `<strong>${escapeHTML(user)}</strong><span>${escapeHTML(text)}</span>`;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('hide');
+            setTimeout(() => notification.remove(), 250);
+        }, 3500);
+    }
+
     imageInput.addEventListener('change', async function () {
         const file = imageInput.files[0];
         if (!file) return;
 
         const formData = new FormData();
         formData.append('image', file);
-        formData.append('user', username); // Pass the username to the server
+        formData.append('user', username); 
 
         try {
-            // Use relative path so it works both locally and in production
             const responseObj = await fetch('/upload', {
                 method: 'POST',
                 body: formData
