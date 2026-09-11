@@ -13,8 +13,13 @@ const wss = new WebSocket.Server({ server });
 app.use(cors());
 app.use(express.json());
 
+// 1. Static folders pehla declare karo jethi static files ane ads.txt fast load thay
+app.use(express.static(path.join(__dirname, 'public')));
+
 const uploadDirectory = path.join(__dirname, 'uploads');
 fs.mkdirSync(uploadDirectory, { recursive: true });
+
+app.use('/uploads', express.static(uploadDirectory));
 
 const storage = multer.diskStorage({
     destination: uploadDirectory,
@@ -46,14 +51,6 @@ app.post('/upload', upload.single('image'), (req, res) => {
     }
 });
 
-
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
-
-
-
 function broadcast(data, excludeClient) {
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN && client !== excludeClient) {
@@ -69,7 +66,7 @@ wss.on('connection', (ws) => {
             const parsedMessage = JSON.parse(message);
             broadcast(parsedMessage, ws);
         } catch (error) {
-            console.error('Failed to parse message', error);
+            console.log('Failed to parse message', error);
         }
     });
     ws.on('close', () => {
