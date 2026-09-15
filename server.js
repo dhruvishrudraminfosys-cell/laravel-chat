@@ -16,6 +16,15 @@ app.use(express.json());
 // 1. Static folders pehla declare karo jethi static files ane ads.txt fast load thay
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 2. Clean routes for the pages
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/chat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'chat.html'));
+});
+
 const uploadDirectory = path.join(__dirname, 'uploads');
 fs.mkdirSync(uploadDirectory, { recursive: true });
 
@@ -29,7 +38,7 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage, limits: { fileSize: 5 * 1024 * 1024 } }); 
+const upload = multer({ storage: storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 app.post('/upload', upload.single('image'), (req, res) => {
     try {

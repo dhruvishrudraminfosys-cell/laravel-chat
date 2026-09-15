@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let username = prompt("Enter your name:") || 'Anonymous';
+    const username = localStorage.getItem('chatUsername');
+    if (!username) {
+        window.location.href = 'index.html';
+        return; // ⬅️ stop here, don't build the chat UI
+    }
 
     const userStatus = document.getElementById('userStatus');
     userStatus.textContent = `Online • Logged in as ${username}`;

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Real-Time Chat</title>
+    <link rel="stylesheet" href="style.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8380416880061654"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="page-wrapper">
+        <div class="top-ad-banner">
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8380416880061654"
+                data-ad-slot="4327319824" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <div class="chat-container">
+            <!-- Header -->
+            <div class="chat-header">
+                <img src="avatar/live-chat.webp" class="header-avatar" alt="Contact">
+                <div class="header-info">
+                    <h3 id="roomTitle">Chat Room</h3>
+                    <span id="userStatus">Online</span>
+                </div>
+            </div>
+
+            <!-- Messages list -->
+            <div id="chatMessages" class="chat-messages"></div>
+
+            <!-- Typing status box -->
+            <div id="typingIndicator" class="typing-indicator"></div>
+
+            <!-- Input Form -->
+            <form id="chatForm" class="chat-input-area">
+                <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                <button type="button" id="uploadBtn" onclick="document.getElementById('imageInput').click()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                </button>
+                <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
+                <button type="submit">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+<script src="script.js"></script>
+</html>
