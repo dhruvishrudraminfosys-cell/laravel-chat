@@ -13,6 +13,11 @@ const wss = new WebSocket.Server({ server });
 app.use(cors());
 app.use(express.json());
 
+app.get('/ads.txt', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.send('google.com, pub-8380416880061654, DIRECT, f08c47fec0942fa0');
+});
+
 // 1. Static folders pehla declare karo jethi static files ane ads.txt fast load thay
 app.use(express.static(path.join(__dirname, 'public')));
 
